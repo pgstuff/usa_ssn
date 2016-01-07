@@ -1,0 +1,25 @@
+{
+    "name": "usa_ssn",
+    "abstract": "Canada SIN data type",
+    "description": "United States of America Social Security number data type",
+    "version": "0.0.1",
+    "maintainer": "The maintainer's name",
+    "license": "postgresql",
+    "provides": {
+        "usa_ssn": {
+            "abstract": "United States of America Social Security number data type",
+            "file": "sql/usa_ssn.sql",
+            "docfile": "doc/usa_ssn.md",
+            "version": "0.0.1"
+        }
+    },
+    "release_status": "unstable",
+
+    "generated_by": "The maintainer's name",
+
+
+    "meta-spec": {
+        "version": "1.0.0",
+        "url": "http://pgxn.org/meta/spec.txt"
+    }
+}

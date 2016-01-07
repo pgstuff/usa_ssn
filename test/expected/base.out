@@ -1,0 +1,158 @@
+\set ECHO none
+CREATE TABLE usa_ssns(id serial primary key, usa_ssn usa_ssn unique);
+INSERT INTO usa_ssns(usa_ssn) VALUES('457-55-5462');
+-- check for alternative input format
+INSERT INTO usa_ssns(usa_ssn) VALUES('078051120');
+-- check for invalid SSNs
+INSERT INTO usa_ssns(usa_ssn) VALUES('000-00-0000');
+ERROR:  SSN number "000-00-0000" is invalid.
+LINE 1: INSERT INTO usa_ssns(usa_ssn) VALUES('000-00-0000');
+                                             ^
+INSERT INTO usa_ssns(usa_ssn) VALUES('999-99-9999');
+ERROR:  SSN number "999-99-9999" is invalid.
+LINE 1: INSERT INTO usa_ssns(usa_ssn) VALUES('999-99-9999');
+                                             ^
+SELECT * FROM usa_ssns ORDER BY usa_ssn;
+ id |   usa_ssn   
+----+-------------
+  2 | 078-05-1120
+  1 | 457-55-5462
+(2 rows)
+
+SELECT id,usa_ssn::text FROM usa_ssns WHERE usa_ssn = '457555462';
+ id |   usa_ssn   
+----+-------------
+  1 | 457-55-5462
+(1 row)
+
+-- test format mask
+CREATE USER usa_ssn_base_test;
+GRANT SELECT ON usa_ssns TO usa_ssn_base_test;
+SET ROLE usa_ssn_base_test;
+SET usa_ssn.format = 'XXXX-xx-6789';
+SELECT id,usa_ssn::text FROM usa_ssns WHERE usa_ssn = '457555462';
+ id |   usa_ssn    
+----+--------------
+  1 | XXXX-xx-5462
+(1 row)
+
+SET usa_ssn.format = '123456789';
+SELECT id,usa_ssn::text FROM usa_ssns WHERE usa_ssn = '078-05-1120';
+ id |  usa_ssn  
+----+-----------
+  2 | 078051120
+(1 row)
+
+RESET usa_ssn.format;
+RESET ROLE;
+REVOKE SELECT ON usa_ssns FROM usa_ssn_base_test;
+DROP USER usa_ssn_base_test;
+-- index scan
+SET enable_seqscan = false;
+SELECT id,usa_ssn::text FROM usa_ssns WHERE usa_ssn = '078-05-1120';
+ id |   usa_ssn   
+----+-------------
+  2 | 078-05-1120
+(1 row)
+
+SELECT id,usa_ssn FROM usa_ssns WHERE usa_ssn >= '078-05-1120' LIMIT 5;
+ id |   usa_ssn   
+----+-------------
+  2 | 078-05-1120
+  1 | 457-55-5462
+(2 rows)
+
+SELECT count(id) FROM usa_ssns;
+ count 
+-------
+     2
+(1 row)
+
+SELECT count(id) FROM usa_ssns WHERE usa_ssn <> ('078-05-1120'::text)::usa_ssn;
+ count 
+-------
+     1
+(1 row)
+
+RESET enable_seqscan;
+-- operators and conversions
+SELECT '078-05-1120'::usa_ssn < '078-05-1120'::usa_ssn;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT '078-05-1120'::usa_ssn > '078-05-1120'::usa_ssn;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT '078-05-1120'::usa_ssn < '457-55-5462'::usa_ssn;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT '078-05-1120'::usa_ssn > '457-55-5462'::usa_ssn;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT '078-05-1120'::usa_ssn <= '078-05-1120'::usa_ssn;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT '078-05-1120'::usa_ssn >= '078-05-1120'::usa_ssn;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT '078-05-1120'::usa_ssn <= '457-55-5462'::usa_ssn;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT '078-05-1120'::usa_ssn >= '457-55-5462'::usa_ssn;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT '078-05-1120'::usa_ssn <> '078-05-1120'::usa_ssn;
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT '078-05-1120'::usa_ssn <> '457-55-5462'::usa_ssn;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT '078-05-1120'::usa_ssn = '078-05-1120'::usa_ssn;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT '078-05-1120'::usa_ssn = '457-55-5462'::usa_ssn;
+ ?column? 
+----------
+ f
+(1 row)
+
+-- COPY FROM/TO
+TRUNCATE usa_ssns;
+COPY usa_ssns(usa_ssn) FROM STDIN;
+COPY usa_ssns TO STDOUT;
+3	078-05-1120
+4	457-55-5462
+-- clean up --
+DROP TABLE usa_ssns;

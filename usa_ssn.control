@@ -1,0 +1,4 @@
+# usa_ssn extension
+comment = 'United States of America Social Security number data type'
+default_version = '0.0.1'
+relocatable = false
