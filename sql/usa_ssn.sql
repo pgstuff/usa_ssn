@@ -47,7 +47,7 @@ LANGUAGE C IMMUTABLE STRICT;
 -- to/from text conversion
 CREATE OR REPLACE FUNCTION usa_ssn_to_text(usa_ssn) RETURNS text AS '$libdir/usa_ssn'
 LANGUAGE C IMMUTABLE STRICT;
-CREATE OR REPLACE FUNCTION text_to_usa_ssn(text) RETURNS usa_ssn AS '$libdir/usa_ssn'
+CREATE OR REPLACE FUNCTION usa_ssn_from_text(text) RETURNS usa_ssn AS '$libdir/usa_ssn'
 LANGUAGE C IMMUTABLE STRICT;
 
 -- operators
@@ -116,7 +116,7 @@ CREATE OPERATOR CLASS usa_ssn_ops DEFAULT FOR TYPE usa_ssn USING btree AS
 	FUNCTION 1 usa_ssn_cmp(usa_ssn, usa_ssn);
 -- cast from/to text
 CREATE CAST (usa_ssn AS text) WITH FUNCTION usa_ssn_to_text(usa_ssn) AS ASSIGNMENT;
-CREATE CAST (text AS usa_ssn) WITH FUNCTION text_to_usa_ssn(text) AS ASSIGNMENT;
+CREATE CAST (text AS usa_ssn) WITH FUNCTION usa_ssn_from_text(text) AS ASSIGNMENT;
 
 /* Does this survive a pg_dump?
 CREATE CAST (int       AS usa_ssn)   WITHOUT FUNCTION AS ASSIGNMENT;

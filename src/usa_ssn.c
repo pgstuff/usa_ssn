@@ -21,7 +21,7 @@ typedef uint32 usa_ssn_t;
 Datum usa_ssn_in(PG_FUNCTION_ARGS);
 Datum usa_ssn_out(PG_FUNCTION_ARGS);
 Datum usa_ssn_to_text(PG_FUNCTION_ARGS);
-Datum text_to_usa_ssn(PG_FUNCTION_ARGS);
+Datum usa_ssn_from_text(PG_FUNCTION_ARGS);
 Datum usa_ssn_send(PG_FUNCTION_ARGS);
 Datum usa_ssn_recv(PG_FUNCTION_ARGS);
 Datum usa_ssn_lt(PG_FUNCTION_ARGS);
@@ -80,9 +80,9 @@ usa_ssn_to_text(PG_FUNCTION_ARGS)
 	PG_RETURN_TEXT_P(usa_ssn_text);
 }
 
-PG_FUNCTION_INFO_V1(text_to_usa_ssn);
+PG_FUNCTION_INFO_V1(usa_ssn_from_text);
 Datum
-text_to_usa_ssn(PG_FUNCTION_ARGS)
+usa_ssn_from_text(PG_FUNCTION_ARGS)
 {
 	text  *usa_ssn_text = PG_GETARG_TEXT_P(0);
 	char  *usa_ssn_str = DatumGetCString(DirectFunctionCall1(textout, PointerGetDatum(usa_ssn_text)));
@@ -356,7 +356,7 @@ usa_ssn_to_cstring(usa_ssn_t usa_ssn)
                 (errmsg("Invalid data."),
                  errhint("The SSN data is out of range.")));
 
-    // % and / are many times slower than * and -.
+    /*
     digit_value1 = remainder * .00000001;
     remainder = remainder - digit_value1 * 100000000;
     digit_value2 = remainder * .0000001;
@@ -373,6 +373,24 @@ usa_ssn_to_cstring(usa_ssn_t usa_ssn)
     remainder = remainder - digit_value7 * 100;
     digit_value8 = remainder * .1;
     digit_value9 = remainder - digit_value8 * 10;
+    */
+    digit_value9 = remainder % 10;
+    remainder *= .1;
+    digit_value8 = remainder % 10;
+    remainder *= .1;
+    digit_value7 = remainder % 10;
+    remainder *= .1;
+    digit_value6 = remainder % 10;
+    remainder *= .1;
+    digit_value5 = remainder % 10;
+    remainder *= .1;
+    digit_value4 = remainder % 10;
+    remainder *= .1;
+    digit_value3 = remainder % 10;
+    remainder *= .1;
+    digit_value2 = remainder % 10;
+    remainder *= .1;
+    digit_value1 = remainder; // % 10;
 
     // Force pg_dump & other DBA tasks to dump the full SSN so that backups are complete & valid.
     if (!superuser())
